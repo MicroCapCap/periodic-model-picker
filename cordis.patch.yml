@@ -1,0 +1,3 @@
+- insert:
+    - id: periodic-model-picker
+      name: '@local/periodic-model-picker'

@@ -1,0 +1,55 @@
+{
+  "name": "@local/periodic-model-picker",
+  "version": "0.2.0",
+  "author": "periodic-model-picker contributors",
+  "description": "Replaces the composer model seat with a periodic-table model picker and adds a Model table settings page. Each model has one row for its display name, icon, element and color; elements that no model occupies stay gray. The host half generates one-sentence model descriptions with the configured LLM and serves them to the picker.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "model-picker",
+    "periodic-table",
+    "ui"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "README.md",
+    "icon.svg",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-chat",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MicroCapCap/periodic-model-picker.git"
+  },
+  "homepage": "https://github.com/MicroCapCap/periodic-model-picker",
+  "bugs": {
+    "url": "https://github.com/MicroCapCap/periodic-model-picker/issues"
+  }
+}

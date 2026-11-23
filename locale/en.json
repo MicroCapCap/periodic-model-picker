@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Periodic Model Picker",
+    "description": "Replaces the composer model seat with a periodic-table picker and adds a Model table page to Settings. Each model has one row for its display name, icon, element and color; elements that no model occupies stay gray. The host generates one-sentence model descriptions with the configured LLM, cached under the harness home. Selecting a tile previews it; one button switches the session's model. No message is sent."
+  }
+}
