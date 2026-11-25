@@ -99,10 +99,10 @@ GET /model-picker/descriptions
 - Generation is capped at eight models per request, each call has a 20-second
   timeout, and a failure is ignored rather than shown as an error.
 - The route returns display text only; it reads no sessions and no credentials.
-- Every request passes the host's own trust fence first
-  (`connection.requestRejection`, the same Host/Origin + login-token gate the
-  shipped routes use); a composition without that service refuses the route, so
-  a web page cannot use it to trigger model calls.
+- The route is registered with `auth: 'required'`, so a host with the
+  token-provider admission authenticates it before the handler runs; older hosts
+  still apply `connection.requestRejection` when that service exists. Either
+  way a web page cannot use it to trigger model calls.
 
 ## Install
 

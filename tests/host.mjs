@@ -60,6 +60,7 @@ check(route !== null, 'route registered')
 check(route && route.kind === 'exact', 'route is exact')
 check(route && route.path === '/model-picker/descriptions', 'route path')
 check(typeof route?.resource === 'function', 'route exposes a GET resource')
+check(route && route.auth === 'required', 'route requires host authentication')
 check(effectLabel.includes('periodic-model-picker'), 'route disposer owned by ctx.effect')
 
 if (route) {
@@ -84,9 +85,9 @@ if (route) {
   {
     const saved = ctx.get
     delete ctx.get
-    const refused = await route.resource(new Request('http://local/model-picker/descriptions'))
+    const served = await route.resource(new Request('http://local/model-picker/descriptions'))
     ctx.get = saved
-    check(refused.status === 403, 'missing connection service is refused')
+    check(served.status === 200, 'missing connection service falls through to host admission')
   }
 }
 

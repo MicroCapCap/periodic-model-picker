@@ -144,24 +144,25 @@ async function warm(ctx, provided) {
 }
 
 /**
- * The host's trust fence. `connection.requestRejection` applies the same
- * Host/Origin + login-token gate the shipped routes use; a composition without
- * that service is refused rather than left open. This route can trigger model
- * calls, so it must not be reachable from an arbitrary web page.
+ * Older DSH releases expose `connection.requestRejection`; newer ones (the
+ * token-provider migration, e.g. 0.2.3) remove it and gate every `webServer`
+ * registration through its `auth` field instead, which `apply()` sets to
+ * `'required'`. Use the old fence when present and fall through otherwise;
+ * refusing here would break the descriptions route on the new admission.
  */
 function trustRefusal(ctx, request) {
   let connection
   try {
     connection = typeof ctx.get === 'function' ? ctx.get('connection') : undefined
   } catch {
-    return 403
+    connection = undefined
   }
-  if (typeof connection?.requestRejection !== 'function') return 403
+  if (typeof connection?.requestRejection !== 'function') return undefined
   try {
     const rejection = connection.requestRejection(request)
     return rejection === undefined ? undefined : rejection
   } catch {
-    return 403
+    return undefined
   }
 }
 
@@ -188,6 +189,9 @@ export function apply(ctx) {
   const dispose = ctx.webServer.register({
     kind: 'exact',
     path: '/model-picker/descriptions',
+    // Token-provider admission on newer hosts; ignored by older ones, which
+    // rely on requestRejection in the handler.
+    auth: 'required',
     resource: async (request) => {
       const refusal = trustRefusal(ctx, request)
       if (refusal !== undefined) return refusalResponse(refusal)
