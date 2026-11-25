@@ -143,6 +143,38 @@ async function warm(ctx, provided) {
   return warming
 }
 
+/**
+ * The host's trust fence. `connection.requestRejection` applies the same
+ * Host/Origin + login-token gate the shipped routes use; a composition without
+ * that service is refused rather than left open. This route can trigger model
+ * calls, so it must not be reachable from an arbitrary web page.
+ */
+function trustRefusal(ctx, request) {
+  let connection
+  try {
+    connection = typeof ctx.get === 'function' ? ctx.get('connection') : undefined
+  } catch {
+    return 403
+  }
+  if (typeof connection?.requestRejection !== 'function') return 403
+  try {
+    const rejection = connection.requestRejection(request)
+    return rejection === undefined ? undefined : rejection
+  } catch {
+    return 403
+  }
+}
+
+function refusalResponse(status) {
+  return new Response(JSON.stringify({ error: status === 401 ? 'unauthorized' : 'forbidden' }), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+  })
+}
+
 function json(body) {
   return new Response(JSON.stringify(body), {
     headers: {
@@ -157,6 +189,8 @@ export function apply(ctx) {
     kind: 'exact',
     path: '/model-picker/descriptions',
     resource: async (request) => {
+      const refusal = trustRefusal(ctx, request)
+      if (refusal !== undefined) return refusalResponse(refusal)
       try {
         const entries = await listModels(ctx)
         const cache = await warm(ctx, entries)

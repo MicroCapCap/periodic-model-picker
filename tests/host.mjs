@@ -21,10 +21,17 @@ let route = null
 let effectLabel = ''
 let generated = 0
 let lastOptions = null
+let rejection
+
+const connection = { requestRejection: () => rejection }
 
 const ctx = {
   webServer: {
     register(candidate) { route = candidate; return () => {} },
+  },
+  connection,
+  get(name) {
+    return name === 'connection' ? this.connection : undefined
   },
   effect(factory, label) {
     effectLabel = label
@@ -64,6 +71,23 @@ if (route) {
   check(body.descriptions['p/n'] === 'Catalog text.', 'catalog description wins')
   check(generated === 1, 'only the missing description is generated')
   check(lastOptions && lastOptions.provider === 'p' && lastOptions.model === 'n', 'generation prefers a sibling model')
+
+  // Fence: a refused request never reaches the model list or a generation.
+  {
+    rejection = 403
+    const before = generated
+    const refused = await route.resource(new Request('http://local/model-picker/descriptions'))
+    rejection = undefined
+    check(refused.status === 403, 'connection rejection is honoured')
+    check(generated === before, 'rejected request does no generation')
+  }
+  {
+    const saved = ctx.get
+    delete ctx.get
+    const refused = await route.resource(new Request('http://local/model-picker/descriptions'))
+    ctx.get = saved
+    check(refused.status === 403, 'missing connection service is refused')
+  }
 }
 
 fs.rmSync(tempHome, { recursive: true, force: true })

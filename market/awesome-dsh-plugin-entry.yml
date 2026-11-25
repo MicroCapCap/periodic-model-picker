@@ -3,4 +3,4 @@ name: MicroCapCap/periodic-model-picker
 category: ui
 description:
   en: Replaces the DeepSeek Harness model seat with a periodic-table picker and adds a Model table settings page for assigning models to elements, icons, and colors.
-tarball: https://github.com/MicroCapCap/periodic-model-picker/releases/download/v0.2.0/periodic-model-picker-0.2.0.tgz
+tarball: https://github.com/MicroCapCap/periodic-model-picker/releases/download/v0.2.1/periodic-model-picker-0.2.1.tgz
