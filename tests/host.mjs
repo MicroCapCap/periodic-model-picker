@@ -82,12 +82,22 @@ if (route) {
     check(refused.status === 403, 'connection rejection is honoured')
     check(generated === before, 'rejected request does no generation')
   }
+  // Token-provider admission (DSH 0.2.3+): the service exists but has no
+  // requestRejection; the route's auth: 'required' already did the check.
+  {
+    const saved = ctx.connection
+    ctx.connection = {}
+    const served = await route.resource(new Request('http://local/model-picker/descriptions'))
+    ctx.connection = saved
+    check(served.status === 200, 'token-provider admission serves the route')
+  }
+  // No admission service at all: refuse rather than leave the route open.
   {
     const saved = ctx.get
     delete ctx.get
-    const served = await route.resource(new Request('http://local/model-picker/descriptions'))
+    const refused = await route.resource(new Request('http://local/model-picker/descriptions'))
     ctx.get = saved
-    check(served.status === 200, 'missing connection service falls through to host admission')
+    check(refused.status === 403, 'missing connection service is refused')
   }
 }
 

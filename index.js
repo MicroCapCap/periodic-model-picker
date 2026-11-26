@@ -144,25 +144,28 @@ async function warm(ctx, provided) {
 }
 
 /**
- * Older DSH releases expose `connection.requestRejection`; newer ones (the
- * token-provider migration, e.g. 0.2.3) remove it and gate every `webServer`
- * registration through its `auth` field instead, which `apply()` sets to
- * `'required'`. Use the old fence when present and fall through otherwise;
- * refusing here would break the descriptions route on the new admission.
+ * Admission: refuse when the composition has no connection service or the old
+ * fence refuses/rejects. Older DSH releases expose
+ * `connection.requestRejection`; newer ones (the token-provider migration,
+ * e.g. 0.2.3) keep the service but remove that method and gate every
+ * `webServer` registration through its `auth` field instead, which `apply()`
+ * sets to `'required'` — in that shape the host has already admitted the
+ * request before this handler runs.
  */
 function trustRefusal(ctx, request) {
   let connection
   try {
     connection = typeof ctx.get === 'function' ? ctx.get('connection') : undefined
   } catch {
-    connection = undefined
+    return 403
   }
-  if (typeof connection?.requestRejection !== 'function') return undefined
+  if (connection === undefined || connection === null) return 403
+  if (typeof connection.requestRejection !== 'function') return undefined
   try {
     const rejection = connection.requestRejection(request)
     return rejection === undefined ? undefined : rejection
   } catch {
-    return undefined
+    return 403
   }
 }
 

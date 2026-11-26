@@ -101,8 +101,10 @@ GET /model-picker/descriptions
 - The route returns display text only; it reads no sessions and no credentials.
 - The route is registered with `auth: 'required'`, so a host with the
   token-provider admission authenticates it before the handler runs; older hosts
-  still apply `connection.requestRejection` when that service exists. Either
-  way a web page cannot use it to trigger model calls.
+  still apply `connection.requestRejection` when that service exists. A request
+  that arrives without either admission — no connection service, a thrown
+  check, or a rejection from the old fence — is refused with 403. Either way a
+  web page cannot use it to trigger model calls.
 
 ## Install
 
